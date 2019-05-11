@@ -56,9 +56,7 @@ architecture Behavioral of creditController is
     signal s_coinValue : STD_LOGIC_VECTOR(15 downto 0) := x"0000";
     -- The ammount of that coin remianing
     signal s_coinAmount : STD_LOGIC_VECTOR(15 downto 0) := x"0000";
-    signal s_coinAvailable : STD_LOGIC := '0';
     
-        
     signal s_adderInput : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     signal s_adderOutput : STD_LOGIC_VECTOR(15 downto 0);
     signal s_adderCarryOut : STD_LOGIC;
@@ -66,6 +64,9 @@ architecture Behavioral of creditController is
     signal s_subtractorInput : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     signal s_subtractorOutput : STD_LOGIC_VECTOR(15 downto 0);
     signal s_subtractorCarryOut : STD_LOGIC;
+    --adder control singnals
+    signal s_adderRead : STD_LOGIC := '0';
+    signal s_subtractorRead : STD_LOGIC := '0';
     
 begin
     s_coinID <= coinID;
@@ -119,34 +120,27 @@ begin
                     when others =>
                         s_coinValue <= (others => '0');                     
                 end case;
-                s_coinAvailable <= '1';
+                s_adderRead <= '1';
             elsif sub = '1' then
                 s_subtractorInput <= toSub;
-                --s_creditStore <= s_subtractorOutput;
+                s_subtractorRead <= '1';
             end if;
             
-            if s_coinAvailable = '1' then
-                s_coinAvailable <= '0';
+            if s_adderRead = '1' then
+                s_adderRead <= '0';
                 s_creditStore <= s_adderOutput;
             end if;
             
+            if s_subtractorRead = '1' then
+                s_subtractorRead <= '0';
+                s_creditStore <= s_subtractorOutput;
+            end if;
+            
             if RST = '1' then
-                --s_creditStore <= (others => '0');
+                s_creditStore <= (others => '0');
                 s_coinValue <= (others => '0');
             end if;
         end if;
     end process;
-    
---    creditUpdate: process(sensor, RST, toSub)
---    begin
---        if RST = '1' then
---            s_creditStore <= (others => '0');
---        end if;
---        if falling_edge(sensor) then
---            s_creditStore <= s_adderOutput;
---        elsif falling_edge(sub) then
---             s_creditStore <= s_subtractorOutput;
---        end if;
---    end process;
-    
+
 end Behavioral;

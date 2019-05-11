@@ -48,7 +48,7 @@ entity MainController is Port(
 end MainController;
 
 architecture Behavioral of MainController is
-    type t_state is (Waiting, CreditCheck, ComputeChange, ChangeCheck, OutputChange, ResetState);
+    type t_state is (Waiting, CreditCheck, ComputeChange, ChangeCheck, OutputChangeDelay, OutputChange, ResetState);
     signal state : t_state := ResetState;
 
     --Input Signals    
@@ -118,8 +118,11 @@ begin
                         if (s_credit = x"0000") then
                             state <= ResetState;
                         else
-                            state <= OutputChange;
+                            state <= OutputChangeDelay;
                         end if;
+                        
+                    when OutputChangeDelay =>
+                        state <= OutputChange;
                         
                     when OutputChange =>
                         s_change <= credit;
