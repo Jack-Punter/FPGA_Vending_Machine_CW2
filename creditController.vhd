@@ -51,14 +51,13 @@ architecture Behavioral of creditController is
     signal s_coinId    : STD_LOGIC_VECTOR(2 downto 0);
     signal s_creditStore : STD_LOGIC_VECTOR(15 downto 0) := x"0000";
     
-    
-    
-    signal s_index : signed(3 downto 0) := "0000";
     -- Signals to hold the values from the lookup arrays
     -- The Value of the coin ID 
     signal s_coinValue : STD_LOGIC_VECTOR(15 downto 0) := x"0000";
     -- The ammount of that coin remianing
     signal s_coinAmount : STD_LOGIC_VECTOR(15 downto 0) := x"0000";
+    signal s_coinAvailable : STD_LOGIC := '0';
+    
         
     signal s_adderInput : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     signal s_adderOutput : STD_LOGIC_VECTOR(15 downto 0);
@@ -71,10 +70,11 @@ architecture Behavioral of creditController is
 begin
     s_coinID <= coinID;
     credit <= s_creditStore;
-    s_adderInput <= s_coinValue;
+    --s_adderInput <= s_coinValue;
     adder: entity work.multiBitAdder port map(
         input1pin => s_creditStore,
-        input2pin => s_adderInput,
+        --input2pin => s_adderInput,
+        input2pin => s_coinValue,
         output => s_adderOutput,
         carryIn => '0',
         carryOut => s_adderCarryOut
@@ -87,54 +87,66 @@ begin
         carryOut => s_subtractorCarryOut
     );
 
-    work: process(GCLK, sensor, sub, RST)
+    addCredit: process(GCLK, sensor, coinID)
     begin
-        -- rising_edge Probably will not work on on borard
         if rising_edge(GCLK) then
-        if RST = '1' then
-            s_creditStore <= x"0000";
-        end if;
-        --assert (sensor /= sub) report "Cannot Add and Subtract at the same time" severity ERROR;
-        if sensor = '1' then
-            report "Sensor High";
-
-            case s_coinID is
-                when "000" =>
-                    s_coinValue <= CoinValueLookup(0);
-                    s_CashBox(0) <= s_CashBox(0) + 1;
-                when "001" =>
-                    s_coinValue <= CoinValueLookup(1);
-                    s_CashBox(1) <= s_CashBox(1) + 1;
-                when "010" =>
-                    s_coinValue <= CoinValueLookup(2);
-                    s_CashBox(2) <= s_CashBox(2) + 1;
-                when "011" =>
-                    s_coinValue <= CoinValueLookup(3);
-                    s_CashBox(3) <= s_CashBox(3) + 1;
-                when "100" =>
-                    s_coinValue <= CoinValueLookup(4);
-                    s_CashBox(4) <= s_CashBox(4) + 1;
-                when "101" =>
-                    s_coinValue <= CoinValueLookup(5);
-                    s_CashBox(5) <= s_CashBox(5) + 1;
-                when "110" =>
-                    s_coinValue <= CoinValueLookup(6);
-                    s_CashBox(6) <= s_CashBox(6) + 1;
-                when "111" =>
-                    s_coinValue <= CoinValueLookup(7);
-                    s_CashBox(7) <= s_CashBox(7) + 1;
-                when others =>
-                    s_coinValue <= x"0000";                     
-            end case;
+            if sensor = '1' then
+                case s_coinID is
+                    when "000" =>
+                        s_coinValue <= CoinValueLookup(0);
+                        s_CashBox(0) <= s_CashBox(0) + 1;
+                    when "001" =>
+                        s_coinValue <= CoinValueLookup(1);
+                        s_CashBox(1) <= s_CashBox(1) + 1;
+                    when "010" =>
+                        s_coinValue <= CoinValueLookup(2);
+                        s_CashBox(2) <= s_CashBox(2) + 1;
+                    when "011" =>
+                        s_coinValue <= CoinValueLookup(3);
+                        s_CashBox(3) <= s_CashBox(3) + 1;
+                    when "100" =>
+                        s_coinValue <= CoinValueLookup(4);
+                        s_CashBox(4) <= s_CashBox(4) + 1;
+                    when "101" =>
+                        s_coinValue <= CoinValueLookup(5);
+                        s_CashBox(5) <= s_CashBox(5) + 1;
+                    when "110" =>
+                        s_coinValue <= CoinValueLookup(6);
+                        s_CashBox(6) <= s_CashBox(6) + 1;
+                    when "111" =>
+                        s_coinValue <= CoinValueLookup(7);
+                        s_CashBox(7) <= s_CashBox(7) + 1;
+                    when others =>
+                        s_coinValue <= (others => '0');                     
+                end case;
+                s_coinAvailable <= '1';
+            elsif sub = '1' then
+                s_subtractorInput <= toSub;
+                --s_creditStore <= s_subtractorOutput;
+            end if;
             
-            --s_adderInput <= s_coinValue;
-            --assert (s_adderCarryOut /= '1') report "adderOverflow" severity ERROR;
-            s_creditStore <= s_adderOutput;
-            --s_creditStore <= STD_LOGIC_VECTOR(unsigned(s_creditStore) + unsigned(s_coinValue));
-        elsif sub = '1' then
-            report "Sub High";
-            s_creditStore <= STD_LOGIC_VECTOR(unsigned(s_creditStore) - unsigned(toSub));
-        end if;
+            if s_coinAvailable = '1' then
+                s_coinAvailable <= '0';
+                s_creditStore <= s_adderOutput;
+            end if;
+            
+            if RST = '1' then
+                --s_creditStore <= (others => '0');
+                s_coinValue <= (others => '0');
+            end if;
         end if;
     end process;
+    
+--    creditUpdate: process(sensor, RST, toSub)
+--    begin
+--        if RST = '1' then
+--            s_creditStore <= (others => '0');
+--        end if;
+--        if falling_edge(sensor) then
+--            s_creditStore <= s_adderOutput;
+--        elsif falling_edge(sub) then
+--             s_creditStore <= s_subtractorOutput;
+--        end if;
+--    end process;
+    
 end Behavioral;

@@ -17,24 +17,14 @@
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity tb_CreditController is
 --  Port ( );
 end tb_CreditController;
-
 architecture Behavioral of tb_creditController is
     component creditController is port(
         GCLK : in STD_LOGIC;
@@ -48,12 +38,15 @@ architecture Behavioral of tb_creditController is
     end component;
     signal s_GCLK         : STD_LOGIC;
     constant clk_period   : time := 10ns;
-    signal s_coin         : STD_LOGIC_VECTOR (2 downto 0);
-    signal s_sensor       : STD_LOGIC;
-    signal s_toSub        : STD_LOGIC_VECTOR (15 downto 0);
-    signal s_sub          : STD_LOGIC;
-    signal s_creditStored : STD_LOGIC_VECTOR (15 downto 0);
-    signal s_reset        : STD_LOGIC;
+    signal s_coin         : STD_LOGIC_VECTOR (2 downto 0) := (others => '0');
+    signal s_sensor       : STD_LOGIC := '0';
+    signal s_toSub        : STD_LOGIC_VECTOR (15 downto 0) := (others => '0');
+    signal s_sub          : STD_LOGIC := '0';
+    signal s_creditStored : STD_LOGIC_VECTOR (15 downto 0) := (others => '0');
+    signal s_reset        : STD_LOGIC := '0';
+    
+    signal s_count : integer := 0;
+    signal control : STD_LOGIC := '0';
 begin
     utt: creditController port map(
         GCLK => s_GCLK,
@@ -73,72 +66,18 @@ begin
         wait for clk_period/2;
     end process;
     
-    stimProc: process
+    stimProc: process(s_GCLK)
     begin
-        s_reset <= '1';
-        s_coin <= "000";
-        s_sensor <= '0';
-        s_toSub <= x"0000";
-        s_sub <= '0';
-        wait for 10ns;
-        
-        s_reset <= '0';
-        wait for 5ns;
-        
-        wait for clk_period*5;
-        s_coin <= "010";
-        s_sensor <= '1';
-        wait for clk_period;
-        s_sensor <= '0';
-        wait for clk_period;
-        s_coin <= "100";
-        s_sensor <= '1';
-        
-        wait;
-        s_coin <= "001";
-        s_sensor <= '1';
-        wait for 5ns;
-        s_sensor <= '0';
-        wait for 5ns;
-        
-        s_coin <= "010";
-        s_sensor <= '1';
-        wait for 5ns;
-        s_sensor <= '0';
-        wait for 5ns;
-
-        s_coin <= "011";
-        s_sensor <= '1';
-        wait for 5ns;
-        s_sensor <= '0';
-        wait for 5ns;
-
-        s_coin <= "100";
-        s_sensor <= '1';
-        wait for 5ns;
-        s_sensor <= '0';
-        wait for 5ns;
-
-        s_coin <= "101";
-        s_sensor <= '1';
-        wait for 5ns;
-        s_sensor <= '0';
-        wait for 5ns;
-        s_sensor <= '1';
-        wait for 5ns;
-        s_sensor <= '0';
-        wait for 5ns;
-        
-        s_toSub <= x"0064";
-        s_sub <= '1';
-        wait for 5ns;
-        s_toSub <= x"0000";
-        s_sub <= '0';
-
-        s_reset <= '1';
-        wait for 5ns;
-        s_reset <= '0';
-        wait;
+        if rising_edge(s_GCLK) and s_count < 8 and s_reset = '0' then
+            if control = '1' then
+                s_coin <= STD_LOGIC_VECTOR(to_unsigned(s_count, s_coin'length));
+                s_sensor <= '1';
+            else
+                s_sensor <= '0';
+                s_count <= s_count + 1;
+            end if;
+            control <= not(control);
+        end if;
     end process;
 end Behavioral;
 
