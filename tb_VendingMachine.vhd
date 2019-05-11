@@ -1,35 +1,7 @@
-----------------------------------------------------------------------------------
--- Company:
--- Engineer:
---
--- Create Date: 31.12.2018 17:01:59
--- Design Name:
--- Module Name: tb_VendingMachine - Behavioral
--- Project Name:
--- Target Devices:
--- Tool Versions:
--- Description:
---
--- Dependencies:
---
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
---
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity tb_VendingMachine is
 --  Port ( );
@@ -54,17 +26,21 @@ architecture Behavioral of tb_VendingMachine is
 
     constant clk_period : TIME := 10ns;
     -- Input Signals
-    signal s_clk       : STD_LOGIC;
-    signal s_coinID    : STD_LOGIC_VECTOR (2 downto 0);
-    signal s_sensor    : STD_LOGIC;
-    signal s_itemID    : STD_LOGIC_VECTOR (2 downto 0);
-    signal s_reset     : STD_LOGIC;
-    signal s_power     : STD_LOGIC;
+    signal s_clk       : STD_LOGIC := '0';
+    signal s_coinID    : STD_LOGIC_VECTOR (2 downto 0) := (others => '0');
+    signal s_sensor    : STD_LOGIC := '0';
+    signal s_itemID    : STD_LOGIC_VECTOR (2 downto 0)  := (others => '0');
+    signal s_reset     : STD_LOGIC := '0';
+    signal s_power     : STD_LOGIC := '0';
 
     -- Output Singals
-    signal s_change     : STD_LOGIC_VECTOR(15 downto 0);
-    signal s_changeDone : STD_LOGIC;
-    signal s_itemDone   : STD_LOGIC;
+    signal s_change     : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+    signal s_changeDone : STD_LOGIC := '0';
+    signal s_itemDone   : STD_LOGIC := '0';
+    
+    -- Misc controll signals
+    signal s_count : integer := 0;
+    --signal s_sensorControl : STD_LOGIC := '0';
 begin
     s_power <= '1';
     utt: VendingMachine port map(
@@ -91,54 +67,49 @@ begin
         wait for clk_period/2;
     end process;
 
-    stim_proc : process
+--    stim_proc : process
+--    begin
+--        s_reset <= '0';
+--        s_coinID <= "000";
+--        s_sensor    <= '0';
+--        s_itemID    <= "000";
+
+--        wait for clk_period*5;
+--        s_coinID <= "010";
+--        s_sensor <= '1';
+--        wait for clk_period;
+--        s_sensor <= '0';
+--        s_coinID <= "000";
+--        wait for clk_period;
+--        s_coinID <= "100";
+--        s_sensor <= '1';
+--        wait for clk_period;
+--        s_sensor <= '0';
+--        s_coinID <= "000";
+--        s_itemID <= "111";
+--        wait for clk_period;
+--        s_itemID <= "000";
+--        wait for clk_period*10;
+--        wait;
+--    end process;
+
+    stimProc: process(s_clk)
     begin
-        s_reset <= '0';
-        s_coinID <= "000";
-        s_sensor    <= '0';
-        s_itemID    <= "000";
-
-        wait for clk_period*5;
-        s_coinID <= "010";
-        s_sensor <= '1';
-        wait for clk_period;
-        s_sensor <= '0';
-        s_coinID <= "000";
-        wait for clk_period;
-        s_coinID <= "100";
-        s_sensor <= '1';
-        wait for clk_period;
-        s_sensor <= '0';
-        s_coinID <= "000";
-        s_itemID <= "111";
-        wait for clk_period;
-        s_itemID <= "000";
-        wait for clk_period*10;
-        
---        s_coinValue <= x"0078";
---        s_sensor <= '1';
---        wait for clk_period;
---        s_coinValue <= x"0000";
---        s_sensor <= '0';
---        s_itemID <= "001";
---        wait for clk_period;
---        s_itemID <= "000";
---        wait for clk_period*10;
-
---        s_coinValue <= x"003C";
---        s_sensor <= '1';
---        wait for clk_period;
---        s_coinValue <= x"0000";
---        s_sensor <= '0';
---        s_itemID <= "011";
---        wait for clk_period;
---        s_itemID <= "000";
---        wait for clk_period*10;
-        
---        s_itemID <= "100";
---        wait for clk_period;
---        s_itemID <= "000";
-        wait;
-    end process;
+        if rising_edge(s_clk) then 
+            if s_count < 8 then
+                if s_sensor = '0' then
+                    s_coinID <= STD_LOGIC_VECTOR(to_unsigned(s_count, s_coinID'length));
+                    s_sensor <= '1';
+                else
+                    s_sensor <= '0';
+                end if;
+            elsif s_count = 8 then
+                s_itemID <= "011";
+            elsif s_count = 9 then
+                s_itemID <= "000";
+            end if;
+            s_count <= s_count + 1;
+        end if;
+end process;
 
 end Behavioral;
