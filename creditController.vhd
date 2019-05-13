@@ -59,7 +59,7 @@ architecture Behavioral of creditController is
     signal s_creditStore : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     signal s_creditRead : STD_LOGIC := '0';
     signal s_change : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-    signal s_changeDone : STD_LOGIC := '1';
+    signal s_changeDone : STD_LOGIC := '0';
     -- Signals to hold the values from the lookup arrays
     -- The Value of the coin ID 
     signal s_coinValue : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
@@ -76,6 +76,12 @@ architecture Behavioral of creditController is
     --adder control singnals
     signal s_adderRead : STD_LOGIC := '0';
     signal s_subtractorRead : STD_LOGIC := '0';
+    
+    -- Signal to store credit remianing to give as change
+    signal s_changeAmount : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+    signal s_changeCoinID  : integer := 7;
+    signal s_changeCoinVal : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+    signal s_givingChange : STD_LOGIC := '0';
     
 begin
     s_coinID <= coinID;
@@ -122,6 +128,9 @@ begin
                 s_subtractorRead <= '1';
             -- Return change to user 
             elsif giveChange = '1' then
+                s_givingChange <= '1';
+                s_changeAmount <= s_creditStore;
+                s_creditStore <= (others => '0');
             end if;
             
             -- Last Cycle value was added to adder input
@@ -137,12 +146,37 @@ begin
                 s_subtractorRead <= '0';
                 s_creditStore <= s_subtractorOutput;
             end if;
-            
+                
+            -- Change Giving
+            if s_changeAmount /= x"0000" and s_givingChange = '1' then
+                s_changeCoinVal <= CoinValueLookup(s_changeCoinID);
+                
+                if s_changeCoinVal = x"0000" then
+                    report "Not enough change in cash Box" severity error;
+                end if;
+                
+                if s_changeAmount >= s_changeCoinVal and s_CashBox(s_changeCoinID) > 0 then
+                    s_change <= s_changeCoinVal;
+                    s_changeAmount <= s_changeAmount - s_changeCoinVal;
+                    s_CashBox(s_changeCoinID) <=  s_CashBox(s_changeCoinID) - 1;
+                else
+                    s_changeCoinID <= s_changeCoinID - 1; 
+                end if;
+
+            elsif s_changeAmount = x"0000" and s_givingChange = '1' then
+                s_changeDone <= '1';
+                s_change <= (others => '0');
+                s_givingChange <= '0';
+                s_changeCoinID <= 7;
+            else
+                s_changeDone <= '0';
+            end if;
             -- Reset procedure 
             if RST = '1' then
                 s_creditStore <= (others => '0');
                 s_coinValue <= (others => '0');
             end if;
+            
         end if;
     end process;
 

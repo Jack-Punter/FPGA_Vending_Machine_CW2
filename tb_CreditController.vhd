@@ -85,19 +85,22 @@ begin
     begin
     if rising_edge(s_GCLK) then
         -- 1 Time insert £20 note
-        if s_sensor = '0' and s_count = 1 then
+        if s_count = 1 then
             s_coin <= "111";
             s_sensor <= '1';
-        elsif s_sensor = '1' and s_count = 2 then
+        elsif s_count = 2 then
             s_coin <= "000";
             s_sensor <= '0';
-        end if;
-        if s_count = 3 then
+        elsif s_count = 3 then
             s_toSub <= x"0078";
             s_subItemValue <= '1';
         elsif s_count = 4 then
             s_toSub <= (others => '0');
             s_subItemValue <= '0';
+        elsif s_count = 5 then
+            s_giveChange <= '1';
+        elsif s_count = 6 then
+            s_giveChange <= '0';    
         end if;
         -- Increment count to control tb
         s_count <= s_count + 1;
