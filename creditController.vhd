@@ -50,7 +50,7 @@ architecture Behavioral of creditController is
         x"0010", -- £00.50
         x"0010", -- £01.00
         x"0010", -- £02.00
-        x"0010", -- £05.00
+        x"0000", -- £05.00
         x"0010"  -- £10.00
     );
     
@@ -155,13 +155,17 @@ begin
             if s_coinDispenced = '1' then
                 s_coinDispenced <= '0';
             end if;
+            
+            if s_change /= x"0000" then
+                s_change <= x"0000";
+            end if;
             -- Change Giving
             if s_givingChange = '1' and s_subCashBox = '0' and s_subChange = '0' then
                 if s_changeCoinVal /= CoinValueLookup(s_changeCoinID) then
                     s_changeCoinVal <= CoinValueLookup(s_changeCoinID);
                  else
-                    --if s_changeCoinVal <= s_changeAmount and s_CashBox(s_changeCoinID) /= x"0000" then
-                    if s_changeCoinVal <= s_changeAmount then
+                    if s_changeCoinVal <= s_changeAmount and s_CashBox(s_changeCoinID) /= x"0000" then
+                    --if s_changeCoinVal <= s_changeAmount then
                         s_change <= s_changeCoinVal;
                         --s_changeAmount <= s_changeAmount - s_changeCoinVal;
                         --s_CashBox(s_changeCoinID) <=  s_CashBox(s_changeCoinID) - 1;
