@@ -91,46 +91,27 @@ begin
     addCredit: process(GCLK, sensor, coinID)
     begin
         if rising_edge(GCLK) then
+            -- Coin inserted
             if sensor = '1' then
-                case s_coinID is
-                    when "000" =>
-                        s_coinValue <= CoinValueLookup(0);
-                        s_CashBox(0) <= s_CashBox(0) + 1;
-                    when "001" =>
-                        s_coinValue <= CoinValueLookup(1);
-                        s_CashBox(1) <= s_CashBox(1) + 1;
-                    when "010" =>
-                        s_coinValue <= CoinValueLookup(2);
-                        s_CashBox(2) <= s_CashBox(2) + 1;
-                    when "011" =>
-                        s_coinValue <= CoinValueLookup(3);
-                        s_CashBox(3) <= s_CashBox(3) + 1;
-                    when "100" =>
-                        s_coinValue <= CoinValueLookup(4);
-                        s_CashBox(4) <= s_CashBox(4) + 1;
-                    when "101" =>
-                        s_coinValue <= CoinValueLookup(5);
-                        s_CashBox(5) <= s_CashBox(5) + 1;
-                    when "110" =>
-                        s_coinValue <= CoinValueLookup(6);
-                        s_CashBox(6) <= s_CashBox(6) + 1;
-                    when "111" =>
-                        s_coinValue <= CoinValueLookup(7);
-                        s_CashBox(7) <= s_CashBox(7) + 1;
-                    when others =>
-                        s_coinValue <= (others => '0');                     
-                end case;
+                -- Decode coin and adjust CashBox values 
+                -- Case used rather than te
+                s_coinValue <= CoinValueLookup(to_integer(unsigned('0' & coinID)));
+                s_CashBox(to_integer(unsigned('0' & coinID))) <= s_CashBox(to_integer(unsigned('0' & coinID))) + 1;
                 s_adderRead <= '1';
+            -- Value to be subtracted
             elsif sub = '1' then
                 s_subtractorInput <= toSub;
                 s_subtractorRead <= '1';
             end if;
             
+            -- Last Cycle value was added to adder input
+            -- Value ready to read
             if s_adderRead = '1' then
                 s_adderRead <= '0';
                 s_creditStore <= s_adderOutput;
             end if;
-            
+            -- Last Cycle value was added to subtractor input
+            -- Output ready to read
             if s_subtractorRead = '1' then
                 s_subtractorRead <= '0';
                 s_creditStore <= s_subtractorOutput;
