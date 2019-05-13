@@ -9,33 +9,55 @@ end tb_CreditController;
 architecture Behavioral of tb_creditController is
     component creditController is port(
         GCLK : in STD_LOGIC;
-        coinID   : in STD_LOGIC_VECTOR (2 downto 0);
+        RST  : in STD_LOGIC;
+        
+        coinID : in STD_LOGIC_VECTOR (2 downto 0);
         sensor : in STD_LOGIC;
-        toSub  : in STD_LOGIC_VECTOR (15 downto 0);
-        sub    : in STD_LOGIC;
-        RST : in STD_LOGIC;
-        credit : out STD_LOGIC_VECTOR (15 downto 0) 
+        
+        toSub        : in STD_LOGIC_VECTOR (15 downto 0);
+        subItemValue : in STD_LOGIC;
+        giveChange   : in STD_LOGIC;
+        
+        credit     : out STD_LOGIC_VECTOR (15 downto 0);
+        creditRead : out STD_LOGIC;
+        change     : out STD_LOGIC_VECTOR (15 downto 0);
+        changeDone : out STD_LOGIC
     );
     end component;
-    signal s_GCLK         : STD_LOGIC;
+    
     constant clk_period   : time := 10ns;
+    signal s_GCLK         : STD_LOGIC;
+    signal s_reset        : STD_LOGIC := '0';
+    
     signal s_coin         : STD_LOGIC_VECTOR (2 downto 0) := (others => '0');
     signal s_sensor       : STD_LOGIC := '0';
+    
     signal s_toSub        : STD_LOGIC_VECTOR (15 downto 0) := (others => '0');
-    signal s_sub          : STD_LOGIC := '0';
+    signal s_subItemValue : STD_LOGIC := '0';
+    signal s_giveChange   : STD_LOGIC := '0';
+    
     signal s_creditStored : STD_LOGIC_VECTOR (15 downto 0) := (others => '0');
-    signal s_reset        : STD_LOGIC := '0';
+    signal s_creditRead   : STD_LOGIC;
+    signal s_change       : STD_LOGIC_VECTOR (15 downto 0) := (others => '0');
+    signal s_changeDone   : STD_LOGIC;       
     
     signal s_count : integer := 0;
 begin
     utt: creditController port map(
         GCLK => s_GCLK,
+        RST => s_reset,
+        
         coinID => s_coin,
         sensor => s_sensor,
+        
         toSub => s_toSub,
-        sub => s_sub,
-        RST => s_reset,
-        credit => s_creditStored
+        subItemValue => s_subItemValue,
+        giveChange => s_giveChange,
+        
+        credit => s_creditStored,
+        creditRead => s_creditRead,
+        change => s_change,
+        changeDone => s_changeDone
     );
     
     clkProc : process
@@ -72,10 +94,10 @@ begin
         end if;
         if s_count = 3 then
             s_toSub <= x"0078";
-            s_sub <= '1';
+            s_subItemValue <= '1';
         elsif s_count = 4 then
             s_toSub <= (others => '0');
-            s_sub <= '0';
+            s_subItemValue <= '0';
         end if;
         -- Increment count to control tb
         s_count <= s_count + 1;

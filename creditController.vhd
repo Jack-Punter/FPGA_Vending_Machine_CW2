@@ -6,20 +6,26 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity creditController is
     Port (
         GCLK : in STD_LOGIC;
+        RST : in STD_LOGIC;
+        
         coinID : in STD_LOGIC_VECTOR (2 downto 0);
         sensor : in STD_LOGIC;
-        toSub : in STD_LOGIC_VECTOR (15 downto 0);
-        sub : in STD_LOGIC;
-        RST : in STD_LOGIC;
-        credit : out STD_LOGIC_VECTOR (15 downto 0)
+        
+        toSub        : in STD_LOGIC_VECTOR (15 downto 0);
+        subItemValue : in STD_LOGIC;
+        giveChange   : in STD_LOGIC;
+                
+        credit     : out STD_LOGIC_VECTOR (15 downto 0);
+        creditRead : out STD_LOGIC;
+        change     : out STD_LOGIC_VECTOR (15 downto 0);
+        changeDone : out STD_LOGIC
     );
 end creditController;
 
 architecture Behavioral of creditController is
-
+    -- Types used as the memroy for coin storage and value lookup
     type CoinValueLookup_t is array(0 to 7) of STD_LOGIC_VECTOR(15 downto 0);
     type CashBox_t is array(0 to 7) of STD_LOGIC_VECTOR(15 downto 0);
-    
     
     -- The Coin ID as an unsined int is the index into this array
     -- The value at the index is the value of that coin
@@ -48,14 +54,17 @@ architecture Behavioral of creditController is
         x"0010"  -- £10.00
     );
     
+    -- Port signals
     signal s_coinId    : STD_LOGIC_VECTOR(2 downto 0);
-    signal s_creditStore : STD_LOGIC_VECTOR(15 downto 0) := x"0000";
-    
+    signal s_creditStore : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+    signal s_creditRead : STD_LOGIC := '0';
+    signal s_change : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+    signal s_changeDone : STD_LOGIC := '1';
     -- Signals to hold the values from the lookup arrays
     -- The Value of the coin ID 
-    signal s_coinValue : STD_LOGIC_VECTOR(15 downto 0) := x"0000";
+    signal s_coinValue : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     -- The ammount of that coin remianing
-    signal s_coinAmount : STD_LOGIC_VECTOR(15 downto 0) := x"0000";
+    signal s_coinAmount : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     
     signal s_adderInput : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     signal s_adderOutput : STD_LOGIC_VECTOR(15 downto 0);
@@ -71,6 +80,11 @@ architecture Behavioral of creditController is
 begin
     s_coinID <= coinID;
     credit <= s_creditStore;
+    creditRead <= s_creditRead;
+    change <= s_change;
+    changeDone <= s_changeDone;
+    
+    
     --s_adderInput <= s_coinValue;
     adder: entity work.multiBitAdder port map(
         input1pin => s_creditStore,
@@ -88,19 +102,26 @@ begin
         carryOut => s_subtractorCarryOut
     );
 
-    addCredit: process(GCLK, sensor, coinID)
+    addCredit: process(GCLK, sensor, subItemValue, giveChange, coinID)
     begin
         if rising_edge(GCLK) then
+            -- If high creditRead was high last cycle, set low
+            if s_creditRead = '1' then
+                s_creditRead <= '0';
+            end if;
+            
             -- Coin inserted
             if sensor = '1' then
                 -- Decode coin and increment CashBox values
                 s_coinValue <= CoinValueLookup(to_integer(unsigned('0' & coinID)));
                 s_CashBox(to_integer(unsigned('0' & coinID))) <= s_CashBox(to_integer(unsigned('0' & coinID))) + 1;
                 s_adderRead <= '1';
-            -- Value to be subtracted
-            elsif sub = '1' then
+            -- Item Selected, remove price from credit 
+            elsif subItemValue = '1' then
                 s_subtractorInput <= toSub;
                 s_subtractorRead <= '1';
+            -- Return change to user 
+            elsif giveChange = '1' then
             end if;
             
             -- Last Cycle value was added to adder input
@@ -108,6 +129,7 @@ begin
             if s_adderRead = '1' then
                 s_adderRead <= '0';
                 s_creditStore <= s_adderOutput;
+                s_creditRead <= '1';
             end if;
             -- Last Cycle value was added to subtractor input
             -- Output ready to read
