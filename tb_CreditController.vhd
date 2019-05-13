@@ -27,7 +27,6 @@ architecture Behavioral of tb_creditController is
     signal s_reset        : STD_LOGIC := '0';
     
     signal s_count : integer := 0;
-    signal control : STD_LOGIC := '0';
 begin
     utt: creditController port map(
         GCLK => s_GCLK,
@@ -47,19 +46,42 @@ begin
         wait for clk_period/2;
     end process;
     
-    stimProc: process(s_GCLK)
+--    CoinInsertionTest: process(s_GCLK)
+--    begin
+--        if rising_edge(s_GCLK) and s_count < 8 and s_reset = '0' then
+--            if s_sensor = '0' then
+--                s_coin <= STD_LOGIC_VECTOR(to_unsigned(s_count, s_coin'length));
+--                s_sensor <= '1';
+--            else
+--                s_sensor <= '0';
+--                s_count <= s_count + 1;
+--            end if;
+--        end if;
+--    end process;
+    
+    ItemValueSubTest: process(s_GCLK)
     begin
-        if rising_edge(s_GCLK) and s_count < 8 and s_reset = '0' then
-            if control = '1' then
-                s_coin <= STD_LOGIC_VECTOR(to_unsigned(s_count, s_coin'length));
-                s_sensor <= '1';
-            else
-                s_sensor <= '0';
-                s_count <= s_count + 1;
-            end if;
-            control <= not(control);
+    if rising_edge(s_GCLK) then
+        -- 1 Time insert £20 note
+        if s_sensor = '0' and s_count = 1 then
+            s_coin <= "111";
+            s_sensor <= '1';
+        elsif s_sensor = '1' and s_count = 2 then
+            s_coin <= "000";
+            s_sensor <= '0';
         end if;
+        if s_count = 3 then
+            s_toSub <= x"0078";
+            s_sub <= '1';
+        elsif s_count = 4 then
+            s_toSub <= (others => '0');
+            s_sub <= '0';
+        end if;
+        -- Increment count to control tb
+        s_count <= s_count + 1;
+    end if;
     end process;
+
 end Behavioral;
 
 

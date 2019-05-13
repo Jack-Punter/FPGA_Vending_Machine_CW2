@@ -93,8 +93,7 @@ begin
         if rising_edge(GCLK) then
             -- Coin inserted
             if sensor = '1' then
-                -- Decode coin and adjust CashBox values 
-                -- Case used rather than te
+                -- Decode coin and increment CashBox values
                 s_coinValue <= CoinValueLookup(to_integer(unsigned('0' & coinID)));
                 s_CashBox(to_integer(unsigned('0' & coinID))) <= s_CashBox(to_integer(unsigned('0' & coinID))) + 1;
                 s_adderRead <= '1';
@@ -117,6 +116,7 @@ begin
                 s_creditStore <= s_subtractorOutput;
             end if;
             
+            -- Reset procedure 
             if RST = '1' then
                 s_creditStore <= (others => '0');
                 s_coinValue <= (others => '0');
