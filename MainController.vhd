@@ -39,10 +39,9 @@ entity MainController is Port(
     reset      : in STD_LOGIC;
     power      : in STD_LOGIC; 
     
-    sub        : out STD_LOGIC;
+    subItemVal : out STD_LOGIC;
     valueToSub : out STD_LOGIC_VECTOR (15 downto 0);
-    change     : out STD_LOGIC_VECTOR (15 downto 0);
-    changeDone : out STD_LOGIC;
+    giveChange : out STD_LOGIC;
     itemDone   : out STD_LOGIC
 );
 end MainController;
@@ -58,11 +57,10 @@ architecture Behavioral of MainController is
     signal s_power : STD_LOGIC;
     
     --Output Signals
-    signal s_sub : STD_LOGIC := '0';
+    signal s_subItemVal : STD_LOGIC := '0';
     signal s_valueToSub : STD_LOGIC_VECTOR (15 downto 0) := x"0000";
-    signal s_change : STD_LOGIC_VECTOR(15 downto 0) := x"0000";
-    signal s_changeDone : STD_LOGIC := '0';
-    signal s_itemDone : STD_LOGIC := '0';
+    signal s_giveChange : STD_LOGIC := '0';
+    signal s_itemDone   : STD_LOGIC := '0';
     
 begin
     -- Input Signal Maps
@@ -70,10 +68,9 @@ begin
     s_reset <= reset;
     s_power <= power;
     -- Output Signal maps
-    sub <= s_sub;
+    subItemVal <= s_subItemVal;
+    giveChange <= s_giveChange;
     valueToSub <= s_valueToSub;
-    change <= s_change;
-    changeDone <= s_changeDone;
     itemDone <= s_itemDone;
         
     process(clk, readSignal, reset)
@@ -89,14 +86,14 @@ begin
             else
                 case state is
                     when ResetState =>
-                        s_sub <= '0';
+                        s_subItemVal <= '0';
                         s_valueToSub <= x"0000";
-                        s_change <= x"0000";
-                        s_changeDone <= '0';
+                        s_giveChange <= '1';
                         s_itemDone <= '0';
                         state <= Waiting;
                         
                     when Waiting =>
+                        s_giveChange <= '0';
                         state <= Waiting;
                         
                     when CreditCheck =>
@@ -108,27 +105,24 @@ begin
                         
                     when ComputeChange =>
                         s_valueToSub <= s_itemValue;
-                        s_sub <= '1';
+                        s_subItemVal <= '1';
                         s_itemDone <= '1';
                         state <= ChangeCheck;
                         
                     when ChangeCheck =>
-                        s_sub <= '0';
+                        s_subItemVal <= '0';
                         s_itemDone <= '0';
                         if (s_credit = x"0000") then
                             state <= ResetState;
                         else
-                            state <= OutputChangeDelay;
+                            state <= OutputChange;
                         end if;
                         
                     when OutputChangeDelay =>
                         state <= OutputChange;
                         
                     when OutputChange =>
-                        s_change <= credit;
-                        s_valueToSub <= credit;
-                        s_sub <= '1';
-                        s_changeDone <= '1';
+                        --s_giveChange <= '1';
                         state <= ResetState;
                 end case;
             end if;
