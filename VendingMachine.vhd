@@ -63,10 +63,11 @@ architecture Behavioral of VendingMachine is
     signal s_itemValue  : STD_LOGIC_VECTOR(15 downto 0);
     signal s_readSignal : STD_LOGIC;
     signal s_credit     : STD_LOGIC_VECTOR(15 downto 0);
-    signal s_sub        : STD_LOGIC;
+    signal s_subItemVal : STD_LOGIC;
     signal s_valueToSub : STD_LOGIC_VECTOR(15 downto 0);
         
     -- Output Singals
+    signal s_giveChange : STD_LOGIC;
     signal s_change     : STD_LOGIC_VECTOR(15 downto 0);
     signal s_changeDone : STD_LOGIC;
     signal s_itemDone   : STD_LOGIC;
@@ -95,12 +96,18 @@ begin
     
     creditControl: entity work.CreditController port map(
         GCLK   => s_clk,
-        coinID   => s_coinID,
-        sensor => s_sensor,
-        toSub  => s_valueToSub,
-        sub    => s_sub,
         RST    => s_reset,
-        credit => s_credit
+        
+        coinID => s_coinID,
+        sensor => s_sensor,
+        
+        toSub        => s_valueToSub,
+        subItemValue => s_subItemVal,
+        giveChange   => s_giveChange,
+        
+        credit => s_credit,
+        change => s_change,
+        changeDone => s_changeDone
     );
     
     mainControl : entity work.MainController port map(
@@ -111,10 +118,9 @@ begin
         reset      => s_reset,
         power      => s_power,
         
-        sub        => s_sub,
+        subItemVal => s_subItemVal,
         valueToSub => s_valueToSub,
-        change     => s_change,
-        changeDone => s_changeDone,
+        giveChange => s_giveChange,
         itemDone   => s_itemDone
     );
 end Behavioral;

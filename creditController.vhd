@@ -16,7 +16,7 @@ entity creditController is
         giveChange   : in STD_LOGIC;
                 
         credit     : out STD_LOGIC_VECTOR (15 downto 0);
-        creditRead : out STD_LOGIC;
+        --creditRead : out STD_LOGIC;
         change     : out STD_LOGIC_VECTOR (15 downto 0);
         changeDone : out STD_LOGIC
     );
@@ -57,7 +57,7 @@ architecture Behavioral of creditController is
     -- Port signals
     signal s_coinId    : STD_LOGIC_VECTOR(2 downto 0);
     signal s_creditStore : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-    signal s_creditRead : STD_LOGIC := '0';
+    --signal s_creditRead : STD_LOGIC := '0';
     signal s_change : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     signal s_changeDone : STD_LOGIC := '0';
     -- Signals to hold the values from the lookup arrays
@@ -91,7 +91,7 @@ architecture Behavioral of creditController is
 begin
     s_coinID <= coinID;
     credit <= s_creditStore;
-    creditRead <= s_creditRead;
+    --creditRead <= s_creditRead;
     change <= s_change;
     changeDone <= s_changeDone;
     
@@ -117,9 +117,9 @@ begin
     begin
         if rising_edge(GCLK) then
             -- If high creditRead was high last cycle, set low
-            if s_creditRead = '1' then
-                s_creditRead <= '0';
-            end if;
+--            if s_creditRead = '1' then
+--                s_creditRead <= '0';
+--            end if;
             
             -- Coin inserted
             if sensor = '1' then
@@ -143,7 +143,7 @@ begin
             if s_adderRead = '1' then
                 s_adderRead <= '0';
                 s_creditStore <= s_adderOutput;
-                s_creditRead <= '1';
+                --s_creditRead <= '1';
             end if;
             -- Last Cycle value was added to subtractor input
             -- Output ready to read

@@ -19,7 +19,7 @@ architecture Behavioral of tb_creditController is
         giveChange   : in STD_LOGIC;
         
         credit     : out STD_LOGIC_VECTOR (15 downto 0);
-        creditRead : out STD_LOGIC;
+        --creditRead : out STD_LOGIC;
         change     : out STD_LOGIC_VECTOR (15 downto 0);
         changeDone : out STD_LOGIC
     );
@@ -55,7 +55,7 @@ begin
         giveChange => s_giveChange,
         
         credit => s_creditStored,
-        creditRead => s_creditRead,
+        --creditRead => s_creditRead,
         change => s_change,
         changeDone => s_changeDone
     );
