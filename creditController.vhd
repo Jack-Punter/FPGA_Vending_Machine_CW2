@@ -45,13 +45,13 @@ architecture Behavioral of creditController is
     -- It is assumed that we start with 16 of each coin type in the cash box
     signal s_CashBox : CashBox_t := (
         x"0000", -- £00.00
-        x"0010", -- £00.10
-        x"0010", -- £00.20
-        x"0010", -- £00.50
-        x"0010", -- £01.00
-        x"0010", -- £02.00
-        x"0000", -- £05.00
-        x"0010"  -- £10.00
+        x"0050", -- £00.10
+        x"0050", -- £00.20
+        x"0050", -- £00.50
+        x"0050", -- £01.00
+        x"0050", -- £02.00
+        x"0050", -- £05.00
+        x"0050"  -- £10.00
     );
     
     -- Port signals

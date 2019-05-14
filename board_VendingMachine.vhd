@@ -45,12 +45,14 @@ architecture Behavioral of board_VendingMachine is
     -- Misc Signals
     signal s_GCLK : STD_LOGIC := '0';
     signal s_tmpItemID : STD_LOGIC_VECTOR(2 downto 0);
+    signal s_btnlLatch, s_btnrLatch : STD_LOGIC := '0';
 begin
     -- Port Maps
     -- Ouptut
-    LD7 <= s_vmClk;
-    LD6 <= s_itemDone;
+    LD6 <= s_vmClk;
+    LD7 <= s_itemDone;
     LD5 <= s_changeDone;
+    
     LD4 <= s_change(4);
     LD3 <= s_change(3);
     LD2 <= s_change(2);
@@ -62,7 +64,38 @@ begin
     s_power <= SW4;
     s_reset <= SW3;
     s_coinID <= (SW2, SW1, SW0);
-
+    
+    inputProc: process(s_vmClk, BTNL, BTNR)
+    begin
+    
+    if BTNL = '1' and BTNL /= s_btnlLatch then
+        s_btnlLatch <= '1';
+    end if;
+    if BTNR = '1' and BTNR /= s_btnrLatch then
+        s_btnrLatch <= '1';
+    end if;
+    
+    if rising_edge(s_vmClk) then
+        if s_btnlLatch = '1' then
+            s_sensor <= '1';
+            s_btnlLatch <= '0';
+        end if;
+        
+        if s_btnrLatch = '1' then
+            s_itemID <= s_tmpItemID;
+            s_btnrLatch <= '0';
+        end if;
+        
+        if s_sensor = '1' then
+            s_sensor <= '0';
+        end if;
+        
+        if s_itemID /= "000" then
+            s_itemID <= "000";
+        end if;
+    end if;
+    end process;
+    
     -- Component Port maps
     ClockDivide: entity work.ClockDivider port map(
         GCLK => S_GCLK,
