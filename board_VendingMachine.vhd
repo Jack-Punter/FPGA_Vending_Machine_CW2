@@ -46,18 +46,19 @@ architecture Behavioral of board_VendingMachine is
     signal s_GCLK : STD_LOGIC := '0';
     signal s_tmpItemID : STD_LOGIC_VECTOR(2 downto 0);
     signal s_btnlLatch, s_btnrLatch : STD_LOGIC := '0';
+    signal s_changeOut : STD_LOGIC_VECTOR(3 downto 0);
 begin
     -- Port Maps
     -- Ouptut
     LD6 <= s_vmClk;
     LD7 <= s_itemDone;
     LD5 <= s_changeDone;
-    
-    LD4 <= s_change(4);
-    LD3 <= s_change(3);
-    LD2 <= s_change(2);
-    LD1 <= s_change(1);
-    LD0 <= s_change(0);
+    (LD4, LD3, LD2, LD1, LD0) <= s_changeOut;
+--    LD4 <= s_change(4);
+--    LD3 <= s_change(3);
+--    LD2 <= s_change(2);
+--    LD1 <= s_change(1);
+--    LD0 <= s_change(0);
     -- Input
     s_GCLK <= GCLK;
     s_tmpItemID <= (SW7, SW6, SW5);
@@ -65,6 +66,30 @@ begin
     s_reset <= SW3;
     s_coinID <= (SW2, SW1, SW0);
     
+    changeProc: process(s_change)
+    begin
+    case s_change is
+        when x"0000" =>
+            s_changeOut <= x"0";
+        when x"000A" =>
+            s_changeOut <= x"1";
+        when x"0014" =>
+            s_changeOut <= x"2";
+        when x"0032" =>
+            s_changeOut <= x"3";
+        when x"0064" =>
+            s_changeOut <= x"4";
+        when x"00C8" =>
+            s_changeOut <= x"5";
+        when x"01F4" =>
+            s_changeOut <= x"6";
+        when x"03E8" =>
+            s_changeOut <= x"7";
+        when others =>
+            s_changeOut <= x"0";
+    end case;
+    end process; 
+       
     inputProc: process(s_vmClk, BTNL, BTNR)
     begin
     
