@@ -53,7 +53,8 @@ begin
     LD7 <= s_vmClk;
     LD6 <= s_itemDone;
     LD5 <= s_changeDone;
-    (LD4, LD3, LD2, LD1, LD0) <= s_changeOut;
+    
+    (LD3, LD2, LD1, LD0) <= s_changeOut;
 --    LD4 <= s_change(4);
 --    LD3 <= s_change(3);
 --    LD2 <= s_change(2);
