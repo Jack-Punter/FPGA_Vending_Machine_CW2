@@ -31,7 +31,7 @@ architecture Behavioral of tb_VendingMachine is
     signal s_sensor    : STD_LOGIC := '0';
     signal s_itemID    : STD_LOGIC_VECTOR (2 downto 0)  := (others => '0');
     signal s_reset     : STD_LOGIC := '0';
-    signal s_power     : STD_LOGIC := '0';
+    signal s_power     : STD_LOGIC := '1';
 
     -- Output Singals
     signal s_change     : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
@@ -42,11 +42,10 @@ architecture Behavioral of tb_VendingMachine is
     signal s_count : integer := 0;
     --signal s_sensorControl : STD_LOGIC := '0';
 begin
-    s_power <= '1';
     utt: VendingMachine port map(
         -- Input Ports
         clk       => s_clk,
-        coinID => s_coinID,
+        coinID    => s_coinID,
         sensor    => s_sensor,
         itemID    => s_itemID,
         reset     => s_reset,
@@ -70,17 +69,17 @@ begin
     stimProc: process(s_clk)
     begin
         if rising_edge(s_clk) then 
-            if s_count < 66*2 then
+            if s_count <= 15 then
                 if s_sensor = '0' then
-                    s_coinID <= "111";
+                    s_coinID <= STD_LOGIC_VECTOR(to_unsigned(s_count/2, s_coinID'length));
                     s_sensor <= '1';
                 else
                     s_sensor <= '0';
                 end if;
-            elsif s_count = 66*2 + 1 then
-                s_itemID <= "011";
-            elsif s_count = 66*2 + 2 then
-                s_itemID <= "000";
+            elsif s_count = 16 then
+                s_reset <= '1';
+            elsif s_count = 17 then
+                s_reset <= '0';
             end if;
             s_count <= s_count + 1;
         end if;

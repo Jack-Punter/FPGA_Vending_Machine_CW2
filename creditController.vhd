@@ -132,7 +132,7 @@ begin
                 s_subtractorInput <= toSub;
                 s_subtractorRead <= '1';
             -- Return change to user 
-            elsif giveChange = '1' then
+            elsif giveChange = '1' and s_givingChange = '0' and (s_creditStore /= x"0000") then
                 s_givingChange <= '1';
                 s_changeAmount <= s_creditStore;
                 s_creditStore <= (others => '0');
@@ -207,7 +207,7 @@ begin
             
             -- Reset procedure 
             if RST = '1' then
-                s_creditStore <= (others => '0');
+                --s_creditStore <= (others => '0');
                 s_coinValue <= (others => '0');
             end if;
             

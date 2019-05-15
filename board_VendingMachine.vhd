@@ -45,8 +45,10 @@ architecture Behavioral of board_VendingMachine is
     -- Misc Signals
     signal s_GCLK : STD_LOGIC := '0';
     signal s_tmpItemID : STD_LOGIC_VECTOR(2 downto 0);
-    signal s_btnlLatch, s_btnrLatch : STD_LOGIC := '0';
+    signal s_btnlLatch, s_btnrLatch, s_btncLatch : STD_LOGIC := '0';
     signal s_changeOut : STD_LOGIC_VECTOR(3 downto 0);
+    
+    signal s_coinInBuffer, s_itemInBuffer, s_resetBuffer : std_LOGIC := '0';
 begin
     -- Port Maps
     -- Ouptut
@@ -64,8 +66,9 @@ begin
     s_GCLK <= GCLK;
     s_tmpItemID <= (SW7, SW6, SW5);
     s_power <= SW4;
-    s_reset <= SW3;
     s_coinID <= (SW2, SW1, SW0);
+    s_reset <= s_btncLatch;
+    
     
     changeProc: process(s_change)
     begin
@@ -91,25 +94,48 @@ begin
     end case;
     end process; 
        
+       
+    process
+    begin
+    if rising_edge(s_vmClk) then
+        s_coinInBuffer <= BTNL;
+        s_itemInBuffer <= BTNR;
+        s_resetBuffer <= BTNC; 
+    end if; 
+    end process;
+    
+    process
+    begin
+    if rising_edge(s_vmClk) then
+        if s_coinInBuffer = '0' and BTNL = '1' then
+            s_btnlLatch <= '1';
+        else
+            s_btnlLatch <= '0';
+        end if;
+        
+        if s_itemInBuffer = '0' and BTNR = '1' then
+            s_btnrLatch <= '1';
+        else
+            s_btnrLatch <= '0';
+        end if;
+        
+        if s_resetBuffer = '0' and BTNC = '1' then
+            s_btncLatch <= '1';
+        else
+            s_btncLatch <= '0';
+        end if;  
+    end if; 
+    end process;
+        
     inputProc: process(s_vmClk, BTNL, BTNR)
     begin
-    
-    if BTNL = '1' and BTNL /= s_btnlLatch then
-        s_btnlLatch <= '1';
-    end if;
-    if BTNR = '1' and BTNR /= s_btnrLatch then
-        s_btnrLatch <= '1';
-    end if;
-    
     if rising_edge(s_vmClk) then
         if s_btnlLatch = '1' then
             s_sensor <= '1';
-            s_btnlLatch <= '0';
         end if;
         
         if s_btnrLatch = '1' then
             s_itemID <= s_tmpItemID;
-            s_btnrLatch <= '0';
         end if;
         
         if s_sensor = '1' then

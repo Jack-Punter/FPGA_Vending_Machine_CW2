@@ -53,8 +53,8 @@ architecture Behavioral of MainController is
     --Input Signals    
     signal s_credit : STD_LOGIC_VECTOR (15 downto 0);
     signal s_itemValue  : STD_LOGIC_VECTOR (15 downto 0);
-    signal s_reset : STD_LOGIC;
-    signal s_power : STD_LOGIC;
+    --signal s_reset : STD_LOGIC;
+    --signal s_power : STD_LOGIC;
     
     --Output Signals
     signal s_subItemVal : STD_LOGIC := '0';
@@ -65,67 +65,64 @@ architecture Behavioral of MainController is
 begin
     -- Input Signal Maps
     s_credit <= credit;
-    s_reset <= reset;
-    s_power <= power;
+    --s_reset <= reset;
+    --s_power <= power;
     -- Output Signal maps
     subItemVal <= s_subItemVal;
     giveChange <= s_giveChange;
     valueToSub <= s_valueToSub;
     itemDone <= s_itemDone;
         
-    process(clk, readSignal, reset)
+    process(clk, readSignal, reset, power)
     begin
-        if rising_edge(clk) then
-            if reset = '1' then
+    if rising_edge(clk) then
+        case state is
+            when ResetState =>
+                s_subItemVal <= '0';
+                s_valueToSub <= x"0000";
+                s_giveChange <= '1';
+                s_itemDone <= '0';
+                state <= Waiting;
+            
+            when Waiting =>
+                s_giveChange <= '0';
+                state <= Waiting;
+            
+            when CreditCheck =>
+                if (unsigned(s_credit) < unsigned(s_itemValue)) then
+                    state <= Waiting;
+                else 
+                    state <= ComputeChange;
+                end if;
+            
+            when ComputeChange =>
+                s_valueToSub <= s_itemValue;
+                s_subItemVal <= '1';
+                s_itemDone <= '1';
+                state <= ChangeCheck;
+            
+            when ChangeCheck =>
+                s_subItemVal <= '0';
+                s_itemDone <= '0';
+                if (s_credit = x"0000") then
+                    state <= ResetState;
+                else
+                    state <= OutputChange;
+                end if;
+            
+            when OutputChangeDelay =>
+                state <= OutputChange;
+            
+            when OutputChange =>
+                --s_giveChange <= '1';
                 state <= ResetState;
-            elsif readSignal = '1' and state = Waiting then
-                s_itemValue <= itemValue;
-                state <= CreditCheck;
-            elsif power = '0' then
-                state <= ResetState;
-            else
-                case state is
-                    when ResetState =>
-                        s_subItemVal <= '0';
-                        s_valueToSub <= x"0000";
-                        s_giveChange <= '1';
-                        s_itemDone <= '0';
-                        state <= Waiting;
-                        
-                    when Waiting =>
-                        s_giveChange <= '0';
-                        state <= Waiting;
-                        
-                    when CreditCheck =>
-                        if (unsigned(s_credit) < unsigned(s_itemValue)) then
-                            state <= Waiting;
-                        else 
-                            state <= ComputeChange;
-                        end if;
-                        
-                    when ComputeChange =>
-                        s_valueToSub <= s_itemValue;
-                        s_subItemVal <= '1';
-                        s_itemDone <= '1';
-                        state <= ChangeCheck;
-                        
-                    when ChangeCheck =>
-                        s_subItemVal <= '0';
-                        s_itemDone <= '0';
-                        if (s_credit = x"0000") then
-                            state <= ResetState;
-                        else
-                            state <= OutputChange;
-                        end if;
-                        
-                    when OutputChangeDelay =>
-                        state <= OutputChange;
-                        
-                    when OutputChange =>
-                        --s_giveChange <= '1';
-                        state <= ResetState;
-                end case;
-            end if;
+        end case;
+        if reset = '1' or power = '0' then
+            state <= ResetState;
+        elsif readSignal = '1' and state = Waiting then
+            s_itemValue <= itemValue;
+            state <= CreditCheck;
         end if;
+    end if;
     end process;
 end Behavioral;
