@@ -50,8 +50,8 @@ architecture Behavioral of board_VendingMachine is
 begin
     -- Port Maps
     -- Ouptut
-    LD6 <= s_vmClk;
-    LD7 <= s_itemDone;
+    LD7 <= s_vmClk;
+    LD6 <= s_itemDone;
     LD5 <= s_changeDone;
     (LD4, LD3, LD2, LD1, LD0) <= s_changeOut;
 --    LD4 <= s_change(4);
