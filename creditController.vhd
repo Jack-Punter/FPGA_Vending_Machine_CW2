@@ -142,7 +142,12 @@ begin
             -- Value ready to read
             if s_adderRead = '1' then
                 s_adderRead <= '0';
-                s_creditStore <= s_adderOutput;
+                if s_adderCarryOut = '1' then
+                    s_givingChange <= '1';
+                    s_changeAmount <= s_coinValue;
+                else
+                    s_creditStore <= s_adderOutput;
+                end if;
                 --s_creditRead <= '1';
             end if;
             -- Last Cycle value was added to subtractor input

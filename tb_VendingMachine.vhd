@@ -96,16 +96,16 @@ begin
     stimProc: process(s_clk)
     begin
         if rising_edge(s_clk) then 
-            if s_count < 8 then
+            if s_count < 66*2 then
                 if s_sensor = '0' then
-                    s_coinID <= STD_LOGIC_VECTOR(to_unsigned(s_count, s_coinID'length));
+                    s_coinID <= "111";
                     s_sensor <= '1';
                 else
                     s_sensor <= '0';
                 end if;
-            elsif s_count = 8 then
+            elsif s_count = 66*2 + 1 then
                 s_itemID <= "011";
-            elsif s_count = 9 then
+            elsif s_count = 66*2 + 2 then
                 s_itemID <= "000";
             end if;
             s_count <= s_count + 1;
