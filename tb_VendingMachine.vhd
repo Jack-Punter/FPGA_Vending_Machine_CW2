@@ -67,32 +67,6 @@ begin
         wait for clk_period/2;
     end process;
 
---    stim_proc : process
---    begin
---        s_reset <= '0';
---        s_coinID <= "000";
---        s_sensor    <= '0';
---        s_itemID    <= "000";
-
---        wait for clk_period*5;
---        s_coinID <= "010";
---        s_sensor <= '1';
---        wait for clk_period;
---        s_sensor <= '0';
---        s_coinID <= "000";
---        wait for clk_period;
---        s_coinID <= "100";
---        s_sensor <= '1';
---        wait for clk_period;
---        s_sensor <= '0';
---        s_coinID <= "000";
---        s_itemID <= "111";
---        wait for clk_period;
---        s_itemID <= "000";
---        wait for clk_period*10;
---        wait;
---    end process;
-
     stimProc: process(s_clk)
     begin
         if rising_edge(s_clk) then 
