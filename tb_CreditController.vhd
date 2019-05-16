@@ -19,7 +19,6 @@ architecture Behavioral of tb_creditController is
         giveChange   : in STD_LOGIC;
         
         credit     : out STD_LOGIC_VECTOR (15 downto 0);
-        --creditRead : out STD_LOGIC;
         change     : out STD_LOGIC_VECTOR (15 downto 0);
         changeDone : out STD_LOGIC
     );
@@ -37,7 +36,6 @@ architecture Behavioral of tb_creditController is
     signal s_giveChange   : STD_LOGIC := '0';
     
     signal s_creditStored : STD_LOGIC_VECTOR (15 downto 0) := (others => '0');
-    signal s_creditRead   : STD_LOGIC;
     signal s_change       : STD_LOGIC_VECTOR (15 downto 0) := (others => '0');
     signal s_changeDone   : STD_LOGIC;       
     
@@ -55,7 +53,6 @@ begin
         giveChange => s_giveChange,
         
         credit => s_creditStored,
-        --creditRead => s_creditRead,
         change => s_change,
         changeDone => s_changeDone
     );
@@ -68,23 +65,10 @@ begin
         wait for clk_period/2;
     end process;
     
---    CoinInsertionTest: process(s_GCLK)
---    begin
---        if rising_edge(s_GCLK) and s_count < 8 and s_reset = '0' then
---            if s_sensor = '0' then
---                s_coin <= STD_LOGIC_VECTOR(to_unsigned(s_count, s_coin'length));
---                s_sensor <= '1';
---            else
---                s_sensor <= '0';
---                s_count <= s_count + 1;
---            end if;
---        end if;
---    end process;
-    
     ItemValueSubTest: process(s_GCLK)
     begin
     if rising_edge(s_GCLK) then
-        -- 1 Time insert £20 note
+        -- 1 Time insert ï¿½20 note
         if s_count = 1 then
             s_coin <= "111";
             s_sensor <= '1';
