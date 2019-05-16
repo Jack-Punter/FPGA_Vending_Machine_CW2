@@ -31,7 +31,7 @@ architecture Behavioral of tb_VendingMachine is
     signal s_sensor    : STD_LOGIC := '0';
     signal s_itemID    : STD_LOGIC_VECTOR (2 downto 0)  := (others => '0');
     signal s_reset     : STD_LOGIC := '0';
-    signal s_power     : STD_LOGIC := '0';
+    signal s_power     : STD_LOGIC := '1';
 
     -- Output Singals
     signal s_change     : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
@@ -40,13 +40,11 @@ architecture Behavioral of tb_VendingMachine is
     
     -- Misc controll signals
     signal s_count : integer := 0;
-    --signal s_sensorControl : STD_LOGIC := '0';
 begin
-    s_power <= '1';
     utt: VendingMachine port map(
         -- Input Ports
         clk       => s_clk,
-        coinID => s_coinID,
+        coinID    => s_coinID,
         sensor    => s_sensor,
         itemID    => s_itemID,
         reset     => s_reset,
@@ -67,46 +65,20 @@ begin
         wait for clk_period/2;
     end process;
 
---    stim_proc : process
---    begin
---        s_reset <= '0';
---        s_coinID <= "000";
---        s_sensor    <= '0';
---        s_itemID    <= "000";
-
---        wait for clk_period*5;
---        s_coinID <= "010";
---        s_sensor <= '1';
---        wait for clk_period;
---        s_sensor <= '0';
---        s_coinID <= "000";
---        wait for clk_period;
---        s_coinID <= "100";
---        s_sensor <= '1';
---        wait for clk_period;
---        s_sensor <= '0';
---        s_coinID <= "000";
---        s_itemID <= "111";
---        wait for clk_period;
---        s_itemID <= "000";
---        wait for clk_period*10;
---        wait;
---    end process;
-
     stimProc: process(s_clk)
     begin
         if rising_edge(s_clk) then 
-            if s_count < 8 then
+            if s_count <= 15 then
                 if s_sensor = '0' then
-                    s_coinID <= STD_LOGIC_VECTOR(to_unsigned(s_count, s_coinID'length));
+                    s_coinID <= STD_LOGIC_VECTOR(to_unsigned(s_count/2, s_coinID'length));
                     s_sensor <= '1';
                 else
                     s_sensor <= '0';
                 end if;
-            elsif s_count = 8 then
-                s_itemID <= "011";
-            elsif s_count = 9 then
-                s_itemID <= "000";
+            elsif s_count = 16 then
+                s_reset <= '1';
+            elsif s_count = 17 then
+                s_reset <= '0';
             end if;
             s_count <= s_count + 1;
         end if;
