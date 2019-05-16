@@ -1,24 +1,3 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 14.05.2019 16:51:50
--- Design Name: 
--- Module Name: ClockDivider - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -38,17 +17,12 @@ architecture Behavioral of ClockDivider is
     signal s_vmClkBits : STD_LOGIC_VECTOR (vectorBitcount - 1 downto 0) := (others => '0');
 begin
     vmClk <= s_vmClkBits(vectorBitcount - 1);
+
     --Clock process (also divides)
     clockDivide: process(GCLK)
     begin
     if rising_edge(GCLK) then
         s_vmClkBits <= STD_LOGIC_VECTOR(unsigned(s_vmClkBits) + 1);
---        s_vmClkBits(0) <= not(s_vmClkBits(0));
---        for i in 1 to 23 loop
---            if s_vmClkBits(i-1) = '1' then
---                s_vmClkBits(i) <= not(s_vmClkBits(i));
---            end if;
---        end loop;
     end if;
     end process;
 

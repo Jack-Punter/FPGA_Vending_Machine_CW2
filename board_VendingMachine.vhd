@@ -1,24 +1,3 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 14.05.2019 18:30:17
--- Design Name: 
--- Module Name: board_VendingMachine - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -57,11 +36,6 @@ begin
     LD5 <= s_changeDone;
     
     (LD3, LD2, LD1, LD0) <= s_changeOut;
---    LD4 <= s_change(4);
---    LD3 <= s_change(3);
---    LD2 <= s_change(2);
---    LD1 <= s_change(1);
---    LD0 <= s_change(0);
     -- Input
     s_GCLK <= GCLK;
     s_tmpItemID <= (SW7, SW6, SW5);
@@ -155,40 +129,40 @@ begin
     );
     
     itemDecode: entity work.ItemDecoder port map(
-            clk        => s_vmClk,
-            item       => s_itemID,
-            value      => s_itemVal,
-            read       => s_itemRead
-        );
+        clk        => s_vmClk,
+        item       => s_itemID,
+        value      => s_itemVal,
+        read       => s_itemRead
+    );
+    
+    creditControl: entity work.CreditController port map(
+        GCLK   => s_vmClk,
+        RST    => s_reset,
         
-        creditControl: entity work.CreditController port map(
-            GCLK   => s_vmClk,
-            RST    => s_reset,
-            
-            coinID => s_coinID,
-            sensor => s_sensor,
-            
-            toSub        => s_toSub,
-            subItemValue => s_subItemVal,
-            giveChange   => s_giveChange,
-            
-            credit => s_credit,
-            change => s_change,
-            changeDone => s_changeDone
-        );
+        coinID => s_coinID,
+        sensor => s_sensor,
         
-        mainControl : entity work.MainController port map(
-            clk        => s_vmClk,
-            readSignal => s_itemRead,
-            itemValue  => s_itemVal,
-            credit     => s_credit,
-            reset      => s_reset,
-            power      => s_power,
-            
-            subItemVal => s_subItemVal,
-            valueToSub => s_toSub,
-            giveChange => s_giveChange,
-            itemDone   => s_itemDone
-        );
+        toSub        => s_toSub,
+        subItemValue => s_subItemVal,
+        giveChange   => s_giveChange,
+        
+        credit => s_credit,
+        change => s_change,
+        changeDone => s_changeDone
+    );
+    
+    mainControl : entity work.MainController port map(
+        clk        => s_vmClk,
+        readSignal => s_itemRead,
+        itemValue  => s_itemVal,
+        credit     => s_credit,
+        reset      => s_reset,
+        power      => s_power,
+        
+        subItemVal => s_subItemVal,
+        valueToSub => s_toSub,
+        giveChange => s_giveChange,
+        itemDone   => s_itemDone
+    );
 
 end Behavioral;

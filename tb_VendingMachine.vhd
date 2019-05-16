@@ -40,7 +40,6 @@ architecture Behavioral of tb_VendingMachine is
     
     -- Misc controll signals
     signal s_count : integer := 0;
-    --signal s_sensorControl : STD_LOGIC := '0';
 begin
     utt: VendingMachine port map(
         -- Input Ports

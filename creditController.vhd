@@ -30,39 +30,41 @@ architecture Behavioral of creditController is
     -- The Coin ID as an unsined int is the index into this array
     -- The value at the index is the value of that coin
     constant CoinValueLookup : CoinValueLookup_t := (
-        x"0000", -- £00.00
-        x"000A", -- £00.10
-        x"0014", -- £00.20
-        x"0032", -- £00.50
-        x"0064", -- £01.00
-        x"00C8", -- £02.00
-        x"01F4", -- £05.00
-        x"03E8"  -- £10.00
+        x"0000", -- ï¿½00.00
+        x"000A", -- ï¿½00.10
+        x"0014", -- ï¿½00.20
+        x"0032", -- ï¿½00.50
+        x"0064", -- ï¿½01.00
+        x"00C8", -- ï¿½02.00
+        x"01F4", -- ï¿½05.00
+        x"03E8"  -- ï¿½10.00
     );
 
     -- The Coin ID as an unsined int is the index into this array
     -- The value at the index is the number of that coin we have left
     -- It is assumed that we start with 16 of each coin type in the cash box
     signal s_CashBox : CashBox_t := (
-        x"0000", -- £00.00
-        x"0050", -- £00.10
-        x"0050", -- £00.20
-        x"0050", -- £00.50
-        x"0050", -- £01.00
-        x"0050", -- £02.00
-        x"0050", -- £05.00
-        x"0050"  -- £10.00
+        x"0000", -- ï¿½00.00
+        x"0050", -- ï¿½00.10
+        x"0050", -- ï¿½00.20
+        x"0050", -- ï¿½00.50
+        x"0050", -- ï¿½01.00
+        x"0050", -- ï¿½02.00
+        x"0050", -- ï¿½05.00
+        x"0050"  -- ï¿½10.00
     );
     
     -- Port signals
     signal s_coinId    : STD_LOGIC_VECTOR(2 downto 0);
     signal s_creditStore : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-    --signal s_creditRead : STD_LOGIC := '0';
+    
     signal s_change : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     signal s_changeDone : STD_LOGIC := '0';
+    
     -- Signals to hold the values from the lookup arrays
     -- The Value of the coin ID 
     signal s_coinValue : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+    
     -- The ammount of that coin remianing
     signal s_coinAmount : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     
@@ -85,7 +87,6 @@ architecture Behavioral of creditController is
     
     signal s_subCashBox : STD_LOGIC := '0';
     signal s_subChange : STD_LOGIC := '0';
-    
     signal s_coinDispenced : STD_LOGIC := '0';
     
 begin
@@ -117,9 +118,6 @@ begin
     begin
         if rising_edge(GCLK) then
             -- If high creditRead was high last cycle, set low
---            if s_creditRead = '1' then
---                s_creditRead <= '0';
---            end if;
             
             -- Coin inserted
             if sensor = '1' then
@@ -148,7 +146,6 @@ begin
                 else
                     s_creditStore <= s_adderOutput;
                 end if;
-                --s_creditRead <= '1';
             end if;
             -- Last Cycle value was added to subtractor input
             -- Output ready to read
@@ -172,8 +169,6 @@ begin
                     if s_changeCoinVal <= s_changeAmount and s_CashBox(s_changeCoinID) /= x"0000" then
                     --if s_changeCoinVal <= s_changeAmount then
                         s_change <= s_changeCoinVal;
-                        --s_changeAmount <= s_changeAmount - s_changeCoinVal;
-                        --s_CashBox(s_changeCoinID) <=  s_CashBox(s_changeCoinID) - 1;
                         s_subChange <= '1';
                         s_subCashBox <= '1';                    
                         s_coinDispenced <= '1';
@@ -202,12 +197,9 @@ begin
                 s_changeAmount <= s_changeAmount - s_changeCoinVal;
                 s_subChange <= '0';
             end if;
-            --signal s_subCashBox : STD_LOGIC := '0';
-            --signal s_subChange : STD_LOGIC := '0';
             
             -- Reset procedure 
             if RST = '1' then
-                --s_creditStore <= (others => '0');
                 s_coinValue <= (others => '0');
             end if;
             
